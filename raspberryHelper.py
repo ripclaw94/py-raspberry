@@ -8,6 +8,7 @@ def getTemperatureFromText(text_sonde,factor : int):
             index = text_sonde.index("t=")+2
             temp = float(text_sonde[index:])/factor
         except Exception as identifier:
+            print(f"exception {identifier}")
             temp = 0.0
     return temp
 

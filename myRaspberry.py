@@ -17,7 +17,10 @@ class MyRaspberry(Raspberry) :
     
     AlarmePresence = 0
     AlarmeChaudiere = 0
-    
+    MaxTemperatureChaudiereEmail = 73
+    MaxTemperatureChaudiereSirene = 78
+    temperatures = []
+    EmailChaudiereEnvoye = False
 
     
     # SireneAlarme = Raspberry.Sirene('/home/pi/poussoir/lancesirene.py','SIRENE_ALARME')
@@ -32,16 +35,19 @@ class MyRaspberry(Raspberry) :
     RelaiAlarme = Raspberry.Relay(RELAIS,'RELAI ALARME')
     BuzzerAlarme = Raspberry.Buzzer(BUZZER,'BUZZER')
     PresenceDetecteur = Raspberry.PirDetector(PIR_DETECTOR,'DETECTEUR PRESENCE')
-    SondeTemperatureExterieur = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191285ec0d/w1_slave",'TEMPERATURE EXTERIEUR')
-    SondeTemperatureCave = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191286c32d/w1_slave",'TEMPERATURE CAVE')
-    SondeTemperatureChaudiere = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191eda1932/w1_slave",'TEMPERATURE CHAUDIERE')
+    # SondeTemperatureExterieur = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191285ec0d/w1_slave",'TEMPERATURE EXTERIEUR')
+    # SondeTemperatureCave = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191286c32d/w1_slave",'TEMPERATURE CAVE')
+    # SondeTemperatureChaudiere = Raspberry.TemperatureSensor("/sys/bus/w1/devices/28-01191eda1932/w1_slave",'TEMPERATURE CHAUDIERE')
+    SondeTemperatureExterieur = Raspberry.TemperatureSensor("/home/gilles/py-raspberry/sondeExt",'TEMPERATURE EXTERIEUR')
+    SondeTemperatureCave = Raspberry.TemperatureSensor("/home/gilles/py-raspberry/sondeCave",'TEMPERATURE CAVE')
+    SondeTemperatureChaudiere = Raspberry.TemperatureSensor("/home/gilles/py-raspberry/sondeChaudiere",'TEMPERATURE CHAUDIERE')
 
     def __init__(self):
         super().__init__()
-        self.BoutonPresence.Events.onTurnedOn += self.onBoutonPresenceOn
-        self.BoutonPresence.Events.onTurnedOff += self.onBoutonPresenceOff
-        self.BoutonChaudiere.Events.onTurnedOn += self.onBoutonChaudiereOn
-        self.BoutonChaudiere.Events.onTurnedOff += self.onBoutonChaudiereOff
+        # self.BoutonPresence.Events.onTurnedOn += self.onBoutonPresenceOn
+        # self.BoutonPresence.Events.onTurnedOff += self.onBoutonPresenceOff
+        # self.BoutonChaudiere.Events.onTurnedOn += self.onBoutonChaudiereOn
+        # self.BoutonChaudiere.Events.onTurnedOff += self.onBoutonChaudiereOff
     
     
     def setup(self):
@@ -92,54 +98,77 @@ class MyRaspberry(Raspberry) :
             self.BuzzerAlarme.turnOff()
             time.sleep(0.125)
 
-    def onBoutonPresenceOn(self):
-        # print("---------Bouton Presence ON----------")
-        self.SireneAlarme.activated = False
-        self.AlarmePresence = 1
-        self.PresenceLedOn.turnOff()
-        self.PresenceLedOff.turnOn()
-        self.ActiverAlarmePresence()
-        if self.AlarmePresence==1:
-            self.PresenceDetecteur.addEventListner(self.ON_RISING_EVENT,self.F_pir,3000000)
+    # def onBoutonPresenceOn(self):
+    #     # print("---------Bouton Presence ON----------")
+    #     self.SireneAlarme.activated = False
+    #     self.AlarmePresence = 1
+    #     self.PresenceLedOn.turnOff()
+    #     self.PresenceLedOff.turnOn()
+    #     self.ActiverAlarmePresence()
+    #     if self.AlarmePresence==1:
+    #         self.PresenceDetecteur.addEventListner(self.ON_RISING_EVENT,self.F_pir,3000000)
     
-    def onBoutonPresenceOff(self):
-        # print("---------Bouton Presence OFF----------")
-        self.BuzzerAlarme.turnOff()  
-        if self.SireneAlarme.activated :
-            self.SireneAlarme.stop()
-        self.AlarmePresence = 0
-        self.RelaiAlarme.deactivate()
-        self.PresenceLedOn.turnOn()
-        self.PresenceLedOff.turnOff()
-        self.PresenceDetecteur.removeEventListner()
+    # def onBoutonPresenceOff(self):
+    #     # print("---------Bouton Presence OFF----------")
+    #     self.BuzzerAlarme.turnOff()  
+    #     if self.SireneAlarme.activated :
+    #         self.SireneAlarme.stop()
+    #     self.AlarmePresence = 0
+    #     self.RelaiAlarme.deactivate()
+    #     self.PresenceLedOn.turnOn()
+    #     self.PresenceLedOff.turnOff()
+    #     self.PresenceDetecteur.removeEventListner()
     
-    def onBoutonChaudiereOn(self):
-        # print("---------Bouton Presence ON----------")
-        self.SireneAlarme.activated = False
-        self.AlarmeChaudiere = 1
-        self.ChaudiereLedOn.turnOff()
-        self.ChaudiereLedOff.turnOn()
+    # def checkTemperatureChaudiere(self):
+    #     self.temperatures.insert(0, self.SondeTemperatureChaudiere.Value)
+    #     print(self.temperatures)
+    #     if(len(self.temperatures)>10):
+    #         self.temperatures.pop()
+    #     if(self.EmailChaudiereEnvoye and max(self.temperatures)<self.MaxTemperatureChaudiereEmail ) :
+    #         self.EmailChaudiereEnvoye = False
+    #     if(self.EmailChaudiereEnvoye!=True and self.temperatures[0] > self.MaxTemperatureChaudiereEmail):
+    #         self.sendEmailAlarmeChaudiere()
+    #     if(self.SireneAlarme.activated!=True and self.temperatures[0] > self.MaxTemperatureChaudiereSirene ):
+    #         print('----------Activation SIRENE--------')
+    #         self.SireneAlarme.start()
+        
+    # def sendEmailAlarmeChaudiere(self):
+    #     print('----------Envoi mail Chaudiere')
+    #     self.EmailChaudiereEnvoye = True
+
+    # def onBoutonChaudiereOn(self):
+    #     # print("---------Bouton Presence ON----------")
+    #     self.temperatures.clear()
+    #     self.AlarmeChaudiere = 1
+    #     self.ChaudiereLedOn.turnOff()
+    #     self.ChaudiereLedOff.turnOn()
     
-    def onBoutonChaudiereOff(self):
-        # print("---------Bouton Presence ON----------")
-        self.SireneAlarme.activated = False
-        self.AlarmeChaudiere = 0
-        self.ChaudiereLedOn.turnOn()
-        self.ChaudiereLedOff.turnOff()
+    # def onBoutonChaudiereOff(self):
+         
+    #     if(self.SireneAlarme.activated):
+    #         print("---------DESACTIVATION SIRENE----------")
+    #         self.SireneAlarme.stop()
+    #     self.temperatures.clear()
+    #     self.AlarmeChaudiere = 0
+    #     self.ChaudiereLedOn.turnOn()
+    #     self.ChaudiereLedOff.turnOff()
+
        
     
-    def F_pir(self,channel):
-        now = datetime.datetime.now()    
-        timee=now.strftime("%Y-%m-%d %H:%M:%S")
-        print ("----------------------f3 pir detect something-----------:" + timee +" alarmesirene:")
-        self.SireneAlarme.start()
+    # def F_pir(self,channel):
+    #     now = datetime.datetime.now()    
+    #     timee=now.strftime("%Y-%m-%d %H:%M:%S")
+    #     print ("----------------------f3 pir detect something-----------:" + timee +" alarmesirene:")
+    #     self.SireneAlarme.start()
     
-    def checkUpdate(self):
-        self.AlarmePresence = self.BoutonPresence.Value
-        self.AlarmeChaudiere = self.BoutonChaudiere.Value
-        # print(f"AlarmePresence : {self.AlarmePresence}")
-        # print(f"AlarmeChaudiere : {self.AlarmeChaudiere}")
-        if(self.AlarmePresence) :
-            print('----------Alarme Presence Activée')
+    # def checkUpdate(self):
+    #     self.AlarmePresence = self.BoutonPresence.Value
+    #     self.AlarmeChaudiere = self.BoutonChaudiere.Value
+    #     # print(f"AlarmePresence : {self.AlarmePresence}")
+    #     # print(f"AlarmeChaudiere : {self.AlarmeChaudiere}")
+    #     if(self.AlarmePresence) :
+    #         print('----------Alarme Presence Activée')
+    #     if(self.AlarmeChaudiere) :
+    #         self.checkTemperatureChaudiere()
 
-        time.sleep(1)
+    #     time.sleep(1)

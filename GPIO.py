@@ -17,7 +17,8 @@ class GPIO(object) :
 
     @staticmethod
     def setup(Pin,value):
-        print(f"setup : {Pin} = {value}")
+        #print(f"setup : {Pin} = {value}")
+        pass
     
     @staticmethod
     def input(Pin):
